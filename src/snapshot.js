@@ -1,4 +1,4 @@
-export const SNAPSHOT_VERSION = 2;
+export const SNAPSHOT_VERSION = 3;
 
 export function isSnapshotForDay(value, day) {
   return value !== null

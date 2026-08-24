@@ -16,6 +16,7 @@
 - 最近 365 天 Token 活动热力图，包括累计 Token、单日峰值、当前连续天数和最长连续天数。
 - DeepSeek 账户余额，包括可用总额、充值余额和赠送余额。
 - Z.ai Coding Plan 当前会话周期、每周和账期额度百分比。
+- Kimi Code 会员等级、5 小时滚动额度和每周额度百分比。
 - 按公开模型单价计算等量 API 调用的估价。
 - 使用持久化快照和 stale-while-revalidate，重复进入时立即显示数据。
 - UI 支持中文和英文，并跟随 DSH 当前语言设置。
@@ -37,7 +38,7 @@ API 估价回答的是：“相同 Token 用量按公开 API 单价计算需要�
 ## 一键安装
 
 ```sh
-dsh plugin --profile web add github:Tieboyh/dsh-usage-center
+dsh plugin --profile web add dsh-usage-center
 ```
 
 安装后重启 DSH Web：
@@ -46,7 +47,7 @@ dsh plugin --profile web add github:Tieboyh/dsh-usage-center
 dsh web
 ```
 
-仓库已包含预构建插件 bundle，通过 GitHub 安装时不需要额外配置 pnpm `allowBuilds`。
+npm 包和仓库均包含预构建插件 bundle，安装时不需要额外配置 pnpm `allowBuilds`。如需直接从 GitHub 安装，可将包名换成 `github:Tieboyh/dsh-usage-center`。
 
 ## 从源码安装
 
@@ -70,6 +71,7 @@ dsh plugin --profile web add "$PWD"
 | `ZAI_CODING_CN_API_KEY` | 查询中国区域 Z.ai Coding Plan 的额度周期。 |
 | `ZAI_API_KEY` | Z.ai Coding Plan 的备用凭据。 |
 | `ZAI_API_REGION` | 可选的 Z.ai 区域覆盖配置。 |
+| `KIMI_CODING_API_KEY` | 查询 Kimi Code 会员等级和订阅额度周期。 |
 
 ## 数据与刷新机制
 

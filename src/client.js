@@ -43,7 +43,7 @@ function fmtUpdated(value, t) {
   if (seconds < 60) return tr(t, 'secondsAgo', { n: seconds });
   return tr(t, 'minutesAgo', { n: Math.floor(seconds / 60) });
 }
-const quotaKeys = { session: 'quotaSession', weekly: 'quotaWeekly', billing: 'quotaBilling' };
+const quotaKeys = { session: 'quotaSession', fiveHour: 'quotaFiveHour', weekly: 'quotaWeekly', billing: 'quotaBilling' };
 
 function Heatmap({ activity, locale, t }) {
   if (!activity?.days?.length) return null;
@@ -85,8 +85,8 @@ function Heatmap({ activity, locale, t }) {
   );
 }
 
-function Quotas({ account, locale, t }) {
-  if (!account || account.status !== 'ok') return h('p', { className: 'duc-plan' }, account?.status === 'not-configured' ? t('zaiMissingKey') : t('quotaUnavailable'));
+function Quotas({ account, missingKey, locale, t }) {
+  if (!account || account.status !== 'ok') return h('p', { className: 'duc-plan' }, account?.status === 'not-configured' ? t(missingKey) : t('quotaUnavailable'));
   return h(React.Fragment, null,
     h('p', { className: 'duc-plan' }, account.plan),
     ...account.windows.map(row => h('div', { className: 'duc-quota', key: row.kind },
@@ -111,12 +111,13 @@ function Balances({ account, locale, t }) {
 
 function Provider({ item, account, locale, t }) {
   const tokens = item.tokens;
+  const providerName = item.providerId === 'deepseek-official' ? 'DeepSeek' : item.providerId === 'zai-coding-cn' ? 'Z.ai' : item.providerId === 'kimi-coding' ? 'Kimi Code' : item.providerId;
   return h('section', { className: 'duc-provider' },
     h('div', { className: 'duc-provider-head' },
-      h('div', null, h('div', { className: 'duc-provider-name' }, item.providerId === 'deepseek-official' ? 'DeepSeek' : item.providerId === 'zai-coding-cn' ? 'Z.ai' : item.providerId), h('div', { className: 'duc-provider-model' }, item.model)),
+      h('div', null, h('div', { className: 'duc-provider-name' }, providerName), h('div', { className: 'duc-provider-model' }, item.model)),
       h('div', { className: 'duc-cost' }, h('strong', null, item.estimate ? fmtUsd(item.estimate.usd) : '—'), h('span', null, t('todayEstimate'))),
     ),
-    item.mode === 'subscription' ? h(Quotas, { account, locale, t }) : h(Balances, { account, locale, t }),
+    item.mode === 'subscription' ? h(Quotas, { account, missingKey: item.providerId === 'kimi-coding' ? 'kimiMissingKey' : 'zaiMissingKey', locale, t }) : h(Balances, { account, locale, t }),
     h('div', { className: 'duc-tokens' },
       h('div', { className: 'duc-token' }, h('b', null, fmtNumber(tokens.inputTokens + tokens.cacheWriteTokens, locale)), t('inputTokens')),
       h('div', { className: 'duc-token' }, h('b', null, fmtNumber(tokens.cacheReadTokens, locale)), t('cacheReadTokens')),
@@ -161,7 +162,7 @@ function UsageCenter({ locale: localeService, t }) {
     state.error ? h('p', { className: state.data ? 'duc-inline-error' : 'duc-error', role: 'alert' }, state.data ? tr(t, 'updateFailedCached', { error: state.error }) : tr(t, 'loadFailed', { error: state.error })) : null,
     state.data?.activity ? h(Heatmap, { activity: state.data.activity, locale: intlLocale, t }) : null,
     !state.loading && !state.error && providers.length === 0 ? h('p', { className: 'duc-empty' }, t('emptyToday')) : null,
-    ...providers.map(item => h(Provider, { key: item.route, item, locale: intlLocale, t, account: item.mode === 'subscription' ? state.data?.accounts?.zai : state.data?.accounts?.deepseek })),
+    ...providers.map(item => h(Provider, { key: item.route, item, locale: intlLocale, t, account: item.providerId === 'kimi-coding' ? state.data?.accounts?.kimi : item.mode === 'subscription' ? state.data?.accounts?.zai : state.data?.accounts?.deepseek })),
   );
 }
 

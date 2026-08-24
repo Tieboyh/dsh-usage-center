@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { activityFromDaily, foldDaily, foldToday, mergeDaily } from '../src/usage.js';
 import { estimate } from '../src/pricing.js';
-import { parseDeepSeekBalance, parseZaiQuota } from '../src/accounts.js';
+import { parseDeepSeekBalance, parseKimiQuota, parseZaiQuota } from '../src/accounts.js';
 import { isSnapshotForDay, SNAPSHOT_VERSION, snapshotWire } from '../src/snapshot.js';
 import { en, interpolate, zh } from '../src/locales.js';
 
@@ -21,6 +21,11 @@ test('calculates estimates from distinct cache and output rates', () => {
   assert.equal(Number(value.usd.toFixed(6)), 0.231242);
 });
 
+test('calculates a Kimi K3 API-equivalent estimate', () => {
+  const value = estimate('kimi-coding/k3', { inputTokens: 2_000, cacheReadTokens: 3_000, cacheWriteTokens: 0, outputTokens: 1_000 });
+  assert.equal(Number(value.usd.toFixed(6)), 0.0219);
+});
+
 test('normalizes Z.ai quota percentages', () => {
   const value = parseZaiQuota({ data:{ limits:[
     {type:'TOKENS_LIMIT',unit:5,number:300,usage:100,remaining:99,currentValue:1},
@@ -29,6 +34,18 @@ test('normalizes Z.ai quota percentages', () => {
   ]}}, {data:[{product_name:'GLM Coding Max'}]});
   assert.equal(value.plan, 'GLM Coding Max');
   assert.deepEqual(value.windows.map(x => x.usedPercent), [1,38,4.5]);
+});
+
+test('normalizes Kimi Code weekly and rolling 5-hour quotas', () => {
+  const value = parseKimiQuota({
+    usage: { used: '38', limit: '100', resetTime: '2026-08-30T06:24:55Z' },
+    limits: [{
+      window: { duration: 300, timeUnit: 'TIME_UNIT_MINUTE' },
+      detail: { limit: '100', resetTime: '2026-08-24T10:24:55Z' },
+    }],
+  }, { user_level_name: 'Allegretto' });
+  assert.equal(value.plan, 'Allegretto');
+  assert.deepEqual(value.windows.map(x => [x.kind, x.usedPercent]), [['fiveHour', 0], ['weekly', 38]]);
 });
 
 test('normalizes DeepSeek account balance', () => {

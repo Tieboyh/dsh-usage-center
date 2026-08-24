@@ -16,6 +16,7 @@ A native usage and cost dashboard for DeepSeek Harness Web. It adds a dedicated 
 - A 365-day token activity heatmap with total tokens, peak daily tokens, current streak, and longest streak.
 - DeepSeek account balance, including available, topped-up, and granted balances.
 - Z.ai Coding Plan quota percentages for the current session window, weekly window, and billing cycle.
+- Kimi Code membership tier plus rolling 5-hour and weekly quota percentages.
 - API-equivalent cost estimates calculated from public model rates.
 - Persistent snapshots with stale-while-revalidate loading for instant repeat visits.
 - English and Chinese UI that follows the active DSH language setting.
@@ -37,7 +38,7 @@ API estimates answer: “What would the same token usage cost at public API rate
 ## Quick install
 
 ```sh
-dsh plugin --profile web add github:Tieboyh/dsh-usage-center
+dsh plugin --profile web add dsh-usage-center
 ```
 
 Restart DSH Web after installing:
@@ -46,7 +47,7 @@ Restart DSH Web after installing:
 dsh web
 ```
 
-The repository includes a prebuilt plugin bundle, so GitHub installation does not require pnpm `allowBuilds` configuration.
+The npm package and repository include a prebuilt plugin bundle, so installation does not require pnpm `allowBuilds` configuration. To install directly from GitHub, use `github:Tieboyh/dsh-usage-center` as the package name.
 
 ## Install from source
 
@@ -70,6 +71,7 @@ The plugin reuses DSH credentials. API keys are resolved only by the server proc
 | `ZAI_CODING_CN_API_KEY` | Reads quota windows for a China-region Z.ai Coding Plan. |
 | `ZAI_API_KEY` | Fallback credential for a Z.ai Coding Plan. |
 | `ZAI_API_REGION` | Optional Z.ai region override. |
+| `KIMI_CODING_API_KEY` | Reads the Kimi Code membership tier and subscription quota windows. |
 
 ## Data and refresh behavior
 
