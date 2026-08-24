@@ -9,6 +9,7 @@ const CSS = `
 .duc-root{color:var(--dsw-alias-label-primary,#171717);max-width:100%;padding:2px 0 32px}
 .duc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:30px}
 .duc-title{font-size:27px;line-height:38px;font-weight:600;margin:0 0 4px}.duc-desc{color:var(--dsw-alias-label-secondary,#7b7f89);font-size:15px;line-height:24px;margin:0}
+.duc-status{color:var(--dsw-alias-label-tertiary,#999da5);font-size:12px;line-height:20px;margin:5px 0 0}.duc-status[data-refreshing=true]{color:var(--dsw-alias-button-primary-fill,#1668dc)}
 .duc-refresh{appearance:none;border:1px solid var(--dsw-alias-border-l1,#dedfe2);border-radius:999px;background:var(--dsw-alias-fill-l1,#fff);color:inherit;padding:9px 17px;font:14px/20px inherit;cursor:pointer}.duc-refresh:hover{background:var(--dsw-alias-fill-l2,#f4f5f6)}.duc-refresh:disabled{opacity:.55;cursor:wait}
 .duc-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--dsw-alias-border-l1,#e4e5e7);border-block:1px solid var(--dsw-alias-border-l1,#e4e5e7);margin-bottom:28px}
 .duc-summary>div{background:var(--dsw-alias-bg-base,#fff);padding:18px 18px 18px 0}.duc-summary>div+div{padding-left:22px}.duc-k{color:var(--dsw-alias-label-secondary,#777b84);font-size:13px;line-height:20px}.duc-v{font-size:24px;line-height:34px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
@@ -17,6 +18,7 @@ const CSS = `
 .duc-balances{display:flex;flex-direction:column;margin:-5px 0 21px;border-block:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-balance{display:grid;grid-template-columns:minmax(150px,1.2fr) repeat(2,minmax(110px,1fr));gap:18px;padding:14px 0;align-items:end}.duc-balance+.duc-balance{border-top:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-balance-main span,.duc-balance-part span{display:block;color:var(--dsw-alias-label-secondary,#777b84);font-size:12px;line-height:18px}.duc-balance-main b{font-size:22px;line-height:30px;font-weight:600;font-variant-numeric:tabular-nums}.duc-balance-part b{font-size:15px;line-height:24px;font-weight:500;font-variant-numeric:tabular-nums}.duc-balance-state{color:var(--dsw-alias-state-error-primary,#c33);font-size:12px;margin-left:8px}
 .duc-plan{color:var(--dsw-alias-label-secondary,#777b84);font-size:13px;margin:-12px 0 18px}.duc-quota{margin-top:13px}.duc-quota-meta{display:flex;align-items:baseline;gap:12px;font-size:13px;margin-bottom:7px}.duc-quota-meta b{margin-left:auto;font-size:14px;font-variant-numeric:tabular-nums}.duc-reset{color:var(--dsw-alias-label-tertiary,#999da5);font-size:11px}.duc-track{height:7px;border-radius:99px;background:var(--dsw-alias-fill-l2,#eceef1);overflow:hidden}.duc-fill{height:100%;border-radius:inherit;background:var(--dsw-alias-button-primary-fill,#1668dc)}
 .duc-note{color:var(--dsw-alias-label-secondary,#777b84);font-size:12px;line-height:20px;margin:18px 0 0}.duc-note a{color:inherit;text-decoration:underline;text-underline-offset:2px}.duc-empty,.duc-error{padding:28px 0;color:var(--dsw-alias-label-secondary,#777b84)}.duc-error{color:var(--dsw-alias-state-error-primary,#c33)}
+.duc-inline-error{color:var(--dsw-alias-state-warning-primary,#a56800);font-size:12px;line-height:20px;margin:-16px 0 18px}.duc-skeleton{animation:duc-pulse 1.4s ease-in-out infinite;background:var(--dsw-alias-fill-l2,#eceef1);border-radius:6px}.duc-skeleton-summary{height:98px;margin-bottom:28px}.duc-skeleton-line{height:18px;margin:14px 0}.duc-skeleton-line:nth-child(2){width:72%}.duc-skeleton-line:nth-child(3){width:48%}@keyframes duc-pulse{50%{opacity:.48}}
 [${MARKER}] svg{display:none}[${MARKER}]::before{content:'';width:24px;height:24px;flex:0 0 24px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8'%3E%3Cpath d='M4 19V9m6 10V5m6 14v-7m4 7H2'/%3E%3C/svg%3E") center/contain no-repeat}
 @media(max-width:760px){.duc-summary,.duc-tokens,.duc-balance{grid-template-columns:1fr}.duc-summary{gap:0}.duc-summary>div,.duc-summary>div+div{padding:12px 0;border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-provider-head{flex-direction:column}.duc-cost{text-align:left}}
 `;
@@ -28,6 +30,13 @@ function fmtReset(value) {
   if (!value) return '';
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? '' : `${date.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})} ${date.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})} 重置`;
+}
+function fmtUpdated(value) {
+  if (!value) return '';
+  const seconds = Math.max(0, Math.round((Date.now() - value) / 1000));
+  if (seconds < 10) return '刚刚更新';
+  if (seconds < 60) return `${seconds} 秒前更新`;
+  return `${Math.floor(seconds / 60)} 分钟前更新`;
 }
 const quotaNames = { session: '当前会话周期', weekly: '每周额度', billing: '账期额度' };
 
@@ -72,24 +81,34 @@ function Provider({ item, account }) {
 }
 
 function UsageCenter() {
-  const [state, setState] = useState({ loading: true, data: null, error: '' });
-  const load = useCallback(async () => {
-    setState(s => ({ ...s, loading: true, error: '' }));
+  const [state, setState] = useState({ loading: true, refreshing: false, data: null, error: '' });
+  const load = useCallback(async (force = false) => {
+    setState(s => ({ ...s, loading: s.data === null, refreshing: s.data !== null, error: '' }));
     try {
-      const response = await fetch('/api/usage-center/overview', { cache: 'no-store' });
+      const response = await fetch(`/api/usage-center/overview${force ? '?refresh=1' : ''}`, { cache: 'no-store' });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
-      setState({ loading: false, data, error: '' });
-    } catch (error) { setState(s => ({ ...s, loading: false, error: error instanceof Error ? error.message : String(error) })); }
+      setState({ loading: false, refreshing: data.cache?.refreshing === true, data, error: data.cache?.refreshError ?? '' });
+    } catch (error) { setState(s => ({ ...s, loading: false, refreshing: false, error: error instanceof Error ? error.message : String(error) })); }
   }, []);
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => { void load(false); }, [load]);
+  useEffect(() => {
+    if (!state.data?.cache?.refreshing) return undefined;
+    const timer = setInterval(() => { void load(false); }, 1500);
+    return () => clearInterval(timer);
+  }, [state.data?.cache?.refreshing, load]);
   const providers = state.data?.providers ?? [];
   const total = providers.reduce((sum, p) => sum + (p.tokens.inputTokens + p.tokens.cacheWriteTokens + p.tokens.cacheReadTokens + p.tokens.outputTokens), 0);
   const cost = providers.reduce((sum, p) => sum + (p.estimate?.usd ?? 0), 0);
   return h('main', { className: 'duc-root' },
-    h('header', { className: 'duc-head' }, h('div', null, h('h2', { className: 'duc-title' }, '用量与费用'), h('p', { className: 'duc-desc' }, '查看今日各 Provider 的 Token、订阅额度和 API 估价。')), h('button', { className: 'duc-refresh', type: 'button', disabled: state.loading, onClick: load }, state.loading ? '刷新中…' : '刷新')),
+    h('header', { className: 'duc-head' }, h('div', null,
+      h('h2', { className: 'duc-title' }, '用量与费用'),
+      h('p', { className: 'duc-desc' }, '查看今日各 Provider 的 Token、订阅额度和 API 估价。'),
+      state.data ? h('p', { className: 'duc-status', 'data-refreshing': state.refreshing }, state.refreshing ? '正在后台更新，当前展示上次数据' : fmtUpdated(state.data.updatedAt)) : null),
+    h('button', { className: 'duc-refresh', type: 'button', disabled: state.loading || state.refreshing, onClick: () => load(true) }, state.loading ? '加载中…' : state.refreshing ? '更新中…' : '刷新')),
+    state.loading && !state.data ? h('div', null, h('div', { className: 'duc-skeleton duc-skeleton-summary' }), h('div', { className: 'duc-skeleton duc-skeleton-line' }), h('div', { className: 'duc-skeleton duc-skeleton-line' }), h('div', { className: 'duc-skeleton duc-skeleton-line' })) : null,
     state.data ? h('div', { className: 'duc-summary' }, h('div', null, h('div', { className: 'duc-k' }, '统计日期'), h('div', { className: 'duc-v' }, state.data.day)), h('div', null, h('div', { className: 'duc-k' }, '今日 Token'), h('div', { className: 'duc-v' }, fmtNumber(total))), h('div', null, h('div', { className: 'duc-k' }, '合计 API 估价'), h('div', { className: 'duc-v' }, fmtUsd(cost)))) : null,
-    state.error ? h('p', { className: 'duc-error', role: 'alert' }, `加载失败：${state.error}`) : null,
+    state.error ? h('p', { className: state.data ? 'duc-inline-error' : 'duc-error', role: 'alert' }, state.data ? `更新失败，正在显示上次数据：${state.error}` : `加载失败：${state.error}`) : null,
     !state.loading && !state.error && providers.length === 0 ? h('p', { className: 'duc-empty' }, '今天还没有可统计的模型调用。') : null,
     ...providers.map(item => h(Provider, { key: item.route, item, account: item.mode === 'subscription' ? state.data?.accounts?.zai : state.data?.accounts?.deepseek })),
   );

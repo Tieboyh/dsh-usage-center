@@ -15,6 +15,6 @@ await build({
   banner: { js: 'window.__ModuleLoader__.load({id:"dsh-usage-center",factory:(require)=>{var module={exports:{}};var exports=module.exports;' },
   footer: { js: 'return module.exports;}});' },
 });
-for (const file of ['index.js', 'usage.js', 'pricing.js', 'accounts.js']) {
+for (const file of ['index.js', 'usage.js', 'pricing.js', 'accounts.js', 'snapshot.js']) {
   await copyFile(`src/${file}`, `lib/${file}`);
 }

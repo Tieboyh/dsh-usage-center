@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { foldToday } from '../src/usage.js';
 import { estimate } from '../src/pricing.js';
 import { parseDeepSeekBalance, parseZaiQuota } from '../src/accounts.js';
+import { isSnapshotForDay, SNAPSHOT_VERSION, snapshotWire } from '../src/snapshot.js';
 
 test('replaces cumulative usage samples for the same turn and step', () => {
   const day = '2026-08-24';
@@ -32,4 +33,17 @@ test('normalizes Z.ai quota percentages', () => {
 test('normalizes DeepSeek account balance', () => {
   const value = parseDeepSeekBalance({ is_available:true, balance_infos:[{ currency:'CNY', total_balance:'110.00', granted_balance:'10.00', topped_up_balance:'100.00' }] });
   assert.deepEqual(value, { available:true, balances:[{ currency:'CNY', total:110, granted:10, toppedUp:100 }] });
+});
+
+test('accepts only a current-day persisted snapshot', () => {
+  const snapshot = { ok:true, day:'2026-08-24', updatedAt:100, providers:[] };
+  assert.equal(isSnapshotForDay({ version:SNAPSHOT_VERSION, snapshot }, '2026-08-24'), true);
+  assert.equal(isSnapshotForDay({ version:SNAPSHOT_VERSION, snapshot }, '2026-08-25'), false);
+});
+
+test('decorates cached data without mutating the snapshot', () => {
+  const snapshot = { ok:true, day:'2026-08-24', updatedAt:100, providers:[] };
+  const wire = snapshotWire(snapshot, 350, true);
+  assert.deepEqual(wire.cache, { ageMs:250, refreshing:true });
+  assert.equal('cache' in snapshot, false);
 });
