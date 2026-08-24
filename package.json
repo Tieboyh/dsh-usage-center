@@ -1,0 +1,42 @@
+{
+  "name": "dsh-usage-center",
+  "version": "0.1.0",
+  "description": "Native DSH settings page for daily provider usage, subscription quotas, and API price estimates.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Tieboyh/dsh-usage-center.git"
+  },
+  "homepage": "https://github.com/Tieboyh/dsh-usage-center#readme",
+  "bugs": "https://github.com/Tieboyh/dsh-usage-center/issues",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": ["lib", "cordis.patch.yml", "README.md", "LICENSE"],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node --check src/index.js && node --check src/usage.js && node --check src/pricing.js && node --check src/accounts.js && node --test",
+    "prepare": "npm run build",
+    "prepack": "npm run check"
+  },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-slots",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    }
+  },
+  "keywords": ["dsh", "usage", "cost", "subscription"],
+  "license": "MIT",
+  "engines": { "node": ">=22.19.0" },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "react": "^18.3.1"
+  }
+}
