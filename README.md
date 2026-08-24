@@ -34,7 +34,21 @@ API estimates answer: “What would the same token usage cost at public API rate
 - DeepSeek Harness Web with plugin support.
 - Node.js `>= 22.19.0`.
 
-## Install
+## Quick install
+
+```sh
+dsh plugin --profile web add github:Tieboyh/dsh-usage-center
+```
+
+Restart DSH Web after installing:
+
+```sh
+dsh web
+```
+
+The repository includes a prebuilt plugin bundle, so GitHub installation does not require pnpm `allowBuilds` configuration.
+
+## Install from source
 
 ```sh
 git clone https://github.com/Tieboyh/dsh-usage-center.git
@@ -44,7 +58,7 @@ npm run check
 dsh plugin --profile web add "$PWD"
 ```
 
-Restart DSH Web after installing, upgrading, or removing the plugin.
+Use the source workflow when developing or modifying the plugin. Restart DSH Web after installing, upgrading, or removing it.
 
 ## Credentials
 
@@ -83,7 +97,7 @@ npm run check
 npm run build
 ```
 
-`npm run check` performs syntax checks and runs the Node test suite. The generated DSH client and server bundle is written to `lib/`, which is intentionally excluded from Git.
+`npm run check` performs syntax checks and runs the Node test suite. `npm run build` updates the committed DSH client and server bundle in `lib/`; the committed bundle makes the GitHub one-line install work without dependency build approval.
 
 ## License
 

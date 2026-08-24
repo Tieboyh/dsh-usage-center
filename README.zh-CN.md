@@ -34,7 +34,21 @@ API 估价回答的是：“相同 Token 用量按公开 API 单价计算需要�
 - 支持插件的 DeepSeek Harness Web。
 - Node.js `>= 22.19.0`。
 
-## 安装
+## 一键安装
+
+```sh
+dsh plugin --profile web add github:Tieboyh/dsh-usage-center
+```
+
+安装后重启 DSH Web：
+
+```sh
+dsh web
+```
+
+仓库已包含预构建插件 bundle，通过 GitHub 安装时不需要额外配置 pnpm `allowBuilds`。
+
+## 从源码安装
 
 ```sh
 git clone https://github.com/Tieboyh/dsh-usage-center.git
@@ -44,7 +58,7 @@ npm run check
 dsh plugin --profile web add "$PWD"
 ```
 
-安装、升级或卸载插件后需要重启 DSH Web。
+开发或修改插件时使用源码安装流程。安装、升级或卸载后需要重启 DSH Web。
 
 ## 凭据
 
@@ -83,7 +97,7 @@ npm run check
 npm run build
 ```
 
-`npm run check` 会执行语法检查和 Node 测试。生成的 DSH 客户端与服务端 bundle 位于 `lib/`，该目录不会提交到 Git。
+`npm run check` 会执行语法检查和 Node 测试。`npm run build` 会更新提交在 `lib/` 中的 DSH 客户端与服务端 bundle；提交构建产物可以让 GitHub 一键安装无需授权依赖构建。
 
 ## 许可证
 
