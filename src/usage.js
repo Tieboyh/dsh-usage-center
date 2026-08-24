@@ -32,8 +32,13 @@ function sampleOf(event) {
   return null;
 }
 
-export function foldToday(events, day = localDay()) {
-  const totals = new Map();
+function routeTotals(days, day) {
+  if (!days.has(day)) days.set(day, new Map());
+  return days.get(day);
+}
+
+export function foldDaily(events) {
+  const days = new Map();
   const samples = new Map();
   let currentRoute = 'unknown/unknown';
   for (const event of events) {
@@ -44,15 +49,18 @@ export function foldToday(events, day = localDay()) {
     const route = routeOf(event, currentRoute);
     const tokens = tokensOf(usage);
     const previous = samples.get(key);
-    if (previous?.day === day) add(totals.get(previous.route), previous.tokens, -1);
+    if (previous) add(routeTotals(days, previous.day).get(previous.route), previous.tokens, -1);
     const eventDay = localDay(event.time);
-    if (eventDay === day) {
-      if (!totals.has(route)) totals.set(route, emptyTokens());
-      add(totals.get(route), tokens);
-    }
+    const totals = routeTotals(days, eventDay);
+    if (!totals.has(route)) totals.set(route, emptyTokens());
+    add(totals.get(route), tokens);
     samples.set(key, { day: eventDay, route, tokens });
   }
-  return totals;
+  return days;
+}
+
+export function foldToday(events, day = localDay()) {
+  return foldDaily(events).get(day) ?? new Map();
 }
 
 export function mergeRoutes(target, source) {
@@ -61,4 +69,43 @@ export function mergeRoutes(target, source) {
     add(target.get(route), tokens);
   }
   return target;
+}
+
+export function mergeDaily(target, source) {
+  for (const [day, routes] of source) mergeRoutes(routeTotals(target, day), routes);
+  return target;
+}
+
+export function tokenTotal(tokens) {
+  return tokens.inputTokens + tokens.outputTokens + tokens.cacheReadTokens + tokens.cacheWriteTokens;
+}
+
+function dayAtOffset(now, offset) {
+  const date = new Date(now);
+  date.setHours(12, 0, 0, 0);
+  date.setDate(date.getDate() + offset);
+  return localDay(date.getTime());
+}
+
+export function activityFromDaily(daily, now = Date.now(), windowDays = 365) {
+  const days = [];
+  for (let offset = 1 - windowDays; offset <= 0; offset += 1) {
+    const date = dayAtOffset(now, offset);
+    let tokens = 0;
+    for (const value of daily.get(date)?.values() ?? []) tokens += tokenTotal(value);
+    days.push({ date, tokens });
+  }
+  let totalTokens = 0;
+  let peakTokens = 0;
+  let longestStreak = 0;
+  let running = 0;
+  for (const day of days) {
+    totalTokens += day.tokens;
+    peakTokens = Math.max(peakTokens, day.tokens);
+    running = day.tokens > 0 ? running + 1 : 0;
+    longestStreak = Math.max(longestStreak, running);
+  }
+  let currentStreak = 0;
+  for (let index = days.length - 1; index >= 0 && days[index].tokens > 0; index -= 1) currentStreak += 1;
+  return { windowDays, days, totalTokens, peakTokens, currentStreak, longestStreak };
 }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { foldToday } from '../src/usage.js';
+import { activityFromDaily, foldDaily, foldToday, mergeDaily } from '../src/usage.js';
 import { estimate } from '../src/pricing.js';
 import { parseDeepSeekBalance, parseZaiQuota } from '../src/accounts.js';
 import { isSnapshotForDay, SNAPSHOT_VERSION, snapshotWire } from '../src/snapshot.js';
@@ -37,7 +37,7 @@ test('normalizes DeepSeek account balance', () => {
 });
 
 test('accepts only a current-day persisted snapshot', () => {
-  const snapshot = { ok:true, day:'2026-08-24', updatedAt:100, providers:[] };
+  const snapshot = { ok:true, day:'2026-08-24', updatedAt:100, providers:[], activity:{ days:[] } };
   assert.equal(isSnapshotForDay({ version:SNAPSHOT_VERSION, snapshot }, '2026-08-24'), true);
   assert.equal(isSnapshotForDay({ version:SNAPSHOT_VERSION, snapshot }, '2026-08-25'), false);
 });
@@ -47,6 +47,20 @@ test('decorates cached data without mutating the snapshot', () => {
   const wire = snapshotWire(snapshot, 350, true);
   assert.deepEqual(wire.cache, { ageMs:250, refreshing:true });
   assert.equal('cache' in snapshot, false);
+});
+
+test('builds a 365-day activity series and streak metrics', () => {
+  const daily = new Map();
+  const events = [
+    ['2026-08-20', 1, 10],
+    ['2026-08-22', 2, 20],
+    ['2026-08-23', 3, 30],
+    ['2026-08-24', 4, 40],
+  ].map(([day, turn, inputTokens]) => ({ type:'assistant/message', time:new Date(`${day}T12:00:00`).getTime(), data:{turn,step:1,usage:{inputTokens},message:{source:{provider:'deepseek-official',model:'deepseek-v4-pro'}}} }));
+  mergeDaily(daily, foldDaily(events));
+  const activity = activityFromDaily(daily, new Date('2026-08-24T12:00:00').getTime(), 5);
+  assert.deepEqual(activity.days.map(day => day.tokens), [10,0,20,30,40]);
+  assert.deepEqual({ total:activity.totalTokens, peak:activity.peakTokens, current:activity.currentStreak, longest:activity.longestStreak }, { total:100, peak:40, current:3, longest:3 });
 });
 
 test('keeps Chinese and English dictionaries in sync', () => {

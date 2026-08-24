@@ -1,5 +1,5 @@
 import { estimate } from './pricing.js';
-import { foldToday, localDay, mergeRoutes } from './usage.js';
+import { activityFromDaily, foldDaily, localDay, mergeDaily } from './usage.js';
 import { deepSeekAccount, zaiAccount } from './accounts.js';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
@@ -69,12 +69,12 @@ function providerView(route, tokens) {
 
 export async function collectToday(ctx, now = Date.now()) {
   const day = localDay(now);
-  const routes = new Map();
+  const daily = new Map();
   const liveIds = new Set();
   const sessions = ctx.get('sessions');
   for (const session of sessions?.list?.() ?? []) {
     liveIds.add(session.id);
-    mergeRoutes(routes, foldToday(session.events ?? [], day));
+    mergeDaily(daily, foldDaily(session.events ?? []));
   }
   const persistence = ctx.get('sessionPersistence');
   if (persistence) {
@@ -83,17 +83,18 @@ export async function collectToday(ctx, now = Date.now()) {
       if (liveIds.has(meta.id)) continue;
       try {
         const { events } = await persistence.readFrom(meta.id, 0);
-        mergeRoutes(routes, foldToday(events, day));
+        mergeDaily(daily, foldDaily(events));
       } catch (error) { ctx.logger.warn(`usage-center: skipped session ${meta.id}: ${String(error)}`); }
     }
   }
+  const routes = daily.get(day) ?? new Map();
   const providers = [...routes.entries()].map(([route, tokens]) => providerView(route, tokens)).filter(x => Object.values(x.tokens).some(Boolean));
   const credentials = ctx.get('credentials');
   const [deepseek, zai] = await Promise.all([
     providers.some(x => x.providerId === 'deepseek-official') ? deepSeekAccount(credentials) : null,
     providers.some(x => x.mode === 'subscription') ? zaiAccount(credentials) : null,
   ]);
-  return { ok: true, day, updatedAt: Date.now(), providers, accounts: { deepseek, zai } };
+  return { ok: true, day, updatedAt: Date.now(), providers, accounts: { deepseek, zai }, activity: activityFromDaily(daily, now) };
 }
 
 export function refreshSnapshot(ctx) {

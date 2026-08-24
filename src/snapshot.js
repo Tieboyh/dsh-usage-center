@@ -1,4 +1,4 @@
-export const SNAPSHOT_VERSION = 1;
+export const SNAPSHOT_VERSION = 2;
 
 export function isSnapshotForDay(value, day) {
   return value !== null
@@ -7,7 +7,8 @@ export function isSnapshotForDay(value, day) {
     && value.snapshot?.ok === true
     && value.snapshot.day === day
     && Number.isFinite(value.snapshot.updatedAt)
-    && Array.isArray(value.snapshot.providers);
+    && Array.isArray(value.snapshot.providers)
+    && Array.isArray(value.snapshot.activity?.days);
 }
 
 export function snapshotWire(snapshot, now, refreshing = false, refreshError = null) {

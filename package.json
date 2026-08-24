@@ -1,6 +1,6 @@
 {
   "name": "dsh-usage-center",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Native DSH settings page for daily provider usage, subscription quotas, and API price estimates.",
   "repository": {
     "type": "git",

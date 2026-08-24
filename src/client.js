@@ -15,6 +15,7 @@ const CSS = `
 .duc-refresh{appearance:none;border:1px solid var(--dsw-alias-border-l1,#dedfe2);border-radius:999px;background:var(--dsw-alias-fill-l1,#fff);color:inherit;padding:9px 17px;font:14px/20px inherit;cursor:pointer}.duc-refresh:hover{background:var(--dsw-alias-fill-l2,#f4f5f6)}.duc-refresh:disabled{opacity:.55;cursor:wait}
 .duc-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--dsw-alias-border-l1,#e4e5e7);border-block:1px solid var(--dsw-alias-border-l1,#e4e5e7);margin-bottom:28px}
 .duc-summary>div{background:var(--dsw-alias-bg-base,#fff);padding:18px 18px 18px 0}.duc-summary>div+div{padding-left:22px}.duc-k{color:var(--dsw-alias-label-secondary,#777b84);font-size:13px;line-height:20px}.duc-v{font-size:24px;line-height:34px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
+.duc-activity{padding:0 0 28px;margin:0 0 28px;border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-activity-title{font-size:18px;line-height:28px;font-weight:600;margin:0 0 16px}.duc-activity-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--dsw-alias-border-l1,#e4e5e7);border-radius:16px;margin-bottom:24px;overflow:hidden}.duc-activity-metric{padding:15px 14px;text-align:center}.duc-activity-metric+.duc-activity-metric{border-left:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-activity-metric b{display:block;font-size:19px;line-height:28px;font-weight:600;font-variant-numeric:tabular-nums}.duc-activity-metric span{display:block;color:var(--dsw-alias-label-secondary,#777b84);font-size:11px;line-height:17px}.duc-heatmap-scroll{overflow-x:auto;padding:0 0 5px}.duc-months{position:relative;height:20px;color:var(--dsw-alias-label-tertiary,#999da5);font-size:10px;line-height:16px}.duc-month{position:absolute;top:0;white-space:nowrap}.duc-heatmap{display:grid;grid-template-rows:repeat(7,8px);grid-auto-flow:column;grid-auto-columns:8px;gap:2px;width:max-content}.duc-day{width:8px;height:8px;border-radius:2px;background:var(--dsw-alias-fill-l2,#eceef1)}.duc-day[data-level="1"]{background:color-mix(in srgb,var(--dsw-alias-brand-primary,#246bfd) 22%,transparent)}.duc-day[data-level="2"]{background:color-mix(in srgb,var(--dsw-alias-brand-primary,#246bfd) 42%,transparent)}.duc-day[data-level="3"]{background:color-mix(in srgb,var(--dsw-alias-brand-primary,#246bfd) 68%,transparent)}.duc-day[data-level="4"]{background:var(--dsw-alias-brand-primary,#246bfd)}.duc-day[data-blank=true]{visibility:hidden}
 .duc-provider{border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7);padding:0 0 26px;margin-bottom:26px}.duc-provider-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:20px}.duc-provider-name{font-size:18px;line-height:28px;font-weight:600}.duc-provider-model{color:var(--dsw-alias-label-secondary,#777b84);font:12px/20px ui-monospace,SFMono-Regular,monospace}.duc-cost{text-align:right}.duc-cost strong{display:block;font-size:22px;line-height:30px;font-variant-numeric:tabular-nums}.duc-cost span{color:var(--dsw-alias-label-secondary,#777b84);font-size:12px}
 .duc-tokens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.duc-token{font-size:13px;color:var(--dsw-alias-label-secondary,#777b84)}.duc-token b{display:block;color:var(--dsw-alias-label-primary,#171717);font-size:16px;line-height:24px;font-weight:500;font-variant-numeric:tabular-nums}
 .duc-balances{display:flex;flex-direction:column;margin:-5px 0 21px;border-block:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-balance{display:grid;grid-template-columns:minmax(150px,1.2fr) repeat(2,minmax(110px,1fr));gap:18px;padding:14px 0;align-items:end}.duc-balance+.duc-balance{border-top:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-balance-main span,.duc-balance-part span{display:block;color:var(--dsw-alias-label-secondary,#777b84);font-size:12px;line-height:18px}.duc-balance-main b{font-size:22px;line-height:30px;font-weight:600;font-variant-numeric:tabular-nums}.duc-balance-part b{font-size:15px;line-height:24px;font-weight:500;font-variant-numeric:tabular-nums}.duc-balance-state{color:var(--dsw-alias-state-error-primary,#c33);font-size:12px;margin-left:8px}
@@ -22,12 +23,13 @@ const CSS = `
 .duc-note{color:var(--dsw-alias-label-secondary,#777b84);font-size:12px;line-height:20px;margin:18px 0 0}.duc-note a{color:inherit;text-decoration:underline;text-underline-offset:2px}.duc-empty,.duc-error{padding:28px 0;color:var(--dsw-alias-label-secondary,#777b84)}.duc-error{color:var(--dsw-alias-state-error-primary,#c33)}
 .duc-inline-error{color:var(--dsw-alias-state-warning-primary,#a56800);font-size:12px;line-height:20px;margin:-16px 0 18px}.duc-skeleton{animation:duc-pulse 1.4s ease-in-out infinite;background:var(--dsw-alias-fill-l2,#eceef1);border-radius:6px}.duc-skeleton-summary{height:98px;margin-bottom:28px}.duc-skeleton-line{height:18px;margin:14px 0}.duc-skeleton-line:nth-child(2){width:72%}.duc-skeleton-line:nth-child(3){width:48%}@keyframes duc-pulse{50%{opacity:.48}}
 [${MARKER}] svg{display:none}[${MARKER}]::before{content:'';width:24px;height:24px;flex:0 0 24px;background:currentColor;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.8'%3E%3Cpath d='M4 19V9m6 10V5m6 14v-7m4 7H2'/%3E%3C/svg%3E") center/contain no-repeat}
-@media(max-width:760px){.duc-summary,.duc-tokens,.duc-balance{grid-template-columns:1fr}.duc-summary{gap:0}.duc-summary>div,.duc-summary>div+div{padding:12px 0;border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-provider-head{flex-direction:column}.duc-cost{text-align:left}}
+@media(max-width:760px){.duc-summary,.duc-tokens,.duc-balance{grid-template-columns:1fr}.duc-summary{gap:0}.duc-summary>div,.duc-summary>div+div{padding:12px 0;border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-activity-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.duc-activity-metric:nth-child(3){border-left:0;border-top:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-activity-metric:nth-child(4){border-top:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-provider-head{flex-direction:column}.duc-cost{text-align:left}}
 `;
 
 function tr(t, key, vars) { return interpolate(t(key), vars); }
 function fmtNumber(value, locale) { return new Intl.NumberFormat(locale).format(value ?? 0); }
 function fmtUsd(value) { return `$${Number(value ?? 0).toFixed(value < .1 ? 4 : 3)}`; }
+function fmtCompact(value, locale) { return new Intl.NumberFormat(locale, { notation: 'compact', maximumFractionDigits: 1 }).format(value ?? 0); }
 function fmtMoney(value, currency, locale) { return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value); }
 function fmtReset(value, locale, t) {
   if (!value) return '';
@@ -42,6 +44,46 @@ function fmtUpdated(value, t) {
   return tr(t, 'minutesAgo', { n: Math.floor(seconds / 60) });
 }
 const quotaKeys = { session: 'quotaSession', weekly: 'quotaWeekly', billing: 'quotaBilling' };
+
+function Heatmap({ activity, locale, t }) {
+  if (!activity?.days?.length) return null;
+  const first = new Date(`${activity.days[0].date}T12:00:00`);
+  const leading = first.getDay();
+  const cells = [...Array.from({ length: leading }, () => null), ...activity.days];
+  const columns = Math.ceil(cells.length / 7);
+  const width = columns * 8 + Math.max(0, columns - 1) * 2;
+  const activeValues = activity.days.map(day => day.tokens).filter(Boolean).sort((a, b) => a - b);
+  const months = [];
+  let previousMonth = '';
+  activity.days.forEach((day, index) => {
+    const date = new Date(`${day.date}T12:00:00`);
+    const month = `${date.getFullYear()}-${date.getMonth()}`;
+    if (month === previousMonth) return;
+    previousMonth = month;
+    months.push({ column: Math.floor((leading + index) / 7) + 1, label: date.toLocaleDateString(locale, { month: 'short' }) });
+  });
+  const visibleMonths = months.length > 1 && months[1].column - months[0].column < 3 ? months.slice(1) : months;
+  const metrics = [
+    [fmtCompact(activity.totalTokens, locale), t('activityTotal')],
+    [fmtCompact(activity.peakTokens, locale), t('activityPeak')],
+    [tr(t, 'daysUnit', { n: activity.currentStreak }), t('currentStreak')],
+    [tr(t, 'daysUnit', { n: activity.longestStreak }), t('longestStreak')],
+  ];
+  return h('section', { className: 'duc-activity' },
+    h('h3', { className: 'duc-activity-title' }, t('activityTitle')),
+    h('div', { className: 'duc-activity-metrics' }, ...metrics.map(([value, label]) => h('div', { className: 'duc-activity-metric', key: label }, h('b', null, value), h('span', null, label)))),
+    h('div', { className: 'duc-heatmap-scroll' },
+      h('div', { className: 'duc-months', style: { width: `${width}px` } }, ...visibleMonths.map(month => h('span', { className: 'duc-month', key: `${month.column}-${month.label}`, style: { left: `${(month.column - 1) * 10}px` } }, month.label))),
+      h('div', { className: 'duc-heatmap', role: 'grid', 'aria-label': t('activityTitle') }, ...cells.map((day, index) => {
+        if (!day) return h('span', { className: 'duc-day', 'data-blank': true, key: `blank-${index}` });
+        const rank = day.tokens === 0 ? -1 : activeValues.findIndex(value => value >= day.tokens);
+        const level = rank < 0 ? 0 : Math.min(4, Math.floor(rank / Math.max(1, activeValues.length) * 4) + 1);
+        const title = tr(t, 'activityTooltip', { date: new Date(`${day.date}T12:00:00`).toLocaleDateString(locale), tokens: fmtNumber(day.tokens, locale) });
+        return h('span', { className: 'duc-day', 'data-level': level, key: day.date, role: 'gridcell', title, 'aria-label': title });
+      })),
+    ),
+  );
+}
 
 function Quotas({ account, locale, t }) {
   if (!account || account.status !== 'ok') return h('p', { className: 'duc-plan' }, account?.status === 'not-configured' ? t('zaiMissingKey') : t('quotaUnavailable'));
@@ -117,6 +159,7 @@ function UsageCenter({ locale: localeService, t }) {
     state.loading && !state.data ? h('div', null, h('div', { className: 'duc-skeleton duc-skeleton-summary' }), h('div', { className: 'duc-skeleton duc-skeleton-line' }), h('div', { className: 'duc-skeleton duc-skeleton-line' }), h('div', { className: 'duc-skeleton duc-skeleton-line' })) : null,
     state.data ? h('div', { className: 'duc-summary' }, h('div', null, h('div', { className: 'duc-k' }, t('statDate')), h('div', { className: 'duc-v' }, state.data.day)), h('div', null, h('div', { className: 'duc-k' }, t('todayTokens')), h('div', { className: 'duc-v' }, fmtNumber(total, intlLocale))), h('div', null, h('div', { className: 'duc-k' }, t('totalEstimate')), h('div', { className: 'duc-v' }, fmtUsd(cost)))) : null,
     state.error ? h('p', { className: state.data ? 'duc-inline-error' : 'duc-error', role: 'alert' }, state.data ? tr(t, 'updateFailedCached', { error: state.error }) : tr(t, 'loadFailed', { error: state.error })) : null,
+    state.data?.activity ? h(Heatmap, { activity: state.data.activity, locale: intlLocale, t }) : null,
     !state.loading && !state.error && providers.length === 0 ? h('p', { className: 'duc-empty' }, t('emptyToday')) : null,
     ...providers.map(item => h(Provider, { key: item.route, item, locale: intlLocale, t, account: item.mode === 'subscription' ? state.data?.accounts?.zai : state.data?.accounts?.deepseek })),
   );
