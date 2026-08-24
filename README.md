@@ -1,25 +1,40 @@
 # dsh-usage-center
 
-DSH 设置页中的独立用量中心。第一版展示：
+<p align="center">
+  <strong>English</strong> · <a href="README.zh-CN.md">简体中文</a>
+</p>
 
-- 今日各 Provider 的输入、缓存读取、输出 Token
-- 按公开 API 单价计算的估价（不是账单）
-- Z.ai Coding Plan 的会话、每周和账期额度百分比
-- DeepSeek API 账户的可用总额、充值余额与赠送余额
-- 设置侧栏与全部页面文案支持中文和英文，并实时跟随 DSH 语言设置
-- 最近 365 天的每日 Token 活动热力图，以及累计、单日峰值和连续使用天数
+A native usage and cost dashboard for DeepSeek Harness Web. It adds a dedicated **Usage & Cost** section to DSH Settings and keeps provider usage, subscription quotas, balances, API estimates, and annual activity in one place.
 
-所有统计均在本机完成。插件只暴露回环地址可访问的只读接口，凭据通过 DSH credentials 服务按需读取，不写入插件缓存。
+![Usage overview with annual token activity heatmap](docs/images/usage-overview.png)
 
-## 数据刷新体验
+![Provider usage, balance, and subscription quota details](docs/images/provider-details.png)
 
-- 成功数据会保存为本机快照，重新进入设置页或重启 DSH 后立即展示。
-- 快照超过 1 分钟时先展示已有数据，再在后台自动刷新。
-- 后台刷新完成后页面自动更新，不需要再次点击刷新。
-- 手动刷新期间保留当前数据；上游暂时失败时继续显示上次成功快照。
-- 快照位于 `<DSH_HOME>/storages/usage-center-snapshot.json`，只包含统计结果与账户余额，不包含 API Key。
+## Features
 
-## 安装
+- Daily input, cached-input, and output token usage grouped by provider and model.
+- A 365-day token activity heatmap with total tokens, peak daily tokens, current streak, and longest streak.
+- DeepSeek account balance, including available, topped-up, and granted balances.
+- Z.ai Coding Plan quota percentages for the current session window, weekly window, and billing cycle.
+- API-equivalent cost estimates calculated from public model rates.
+- Persistent snapshots with stale-while-revalidate loading for instant repeat visits.
+- English and Chinese UI that follows the active DSH language setting.
+- Local-only aggregation and a loopback-only read API.
+
+## Estimate vs. actual charge
+
+API estimates answer: “What would the same token usage cost at public API rates?” They are not invoices and are not treated as subscription charges.
+
+- Metered providers show today’s estimated API cost and any supported account balance.
+- Subscription providers show quota consumption percentages plus an API-equivalent estimate.
+- Pricing source links and effective dates are shown directly in the UI.
+
+## Requirements
+
+- DeepSeek Harness Web with plugin support.
+- Node.js `>= 22.19.0`.
+
+## Install
 
 ```sh
 git clone https://github.com/Tieboyh/dsh-usage-center.git
@@ -29,13 +44,47 @@ npm run check
 dsh plugin --profile web add "$PWD"
 ```
 
-安装、升级或卸载后需要重启 DSH Web。
+Restart DSH Web after installing, upgrading, or removing the plugin.
 
-## 凭据
+## Credentials
 
-插件复用 DSH 的凭据配置，不在仓库或浏览器中保存 API Key：
+The plugin reuses DSH credentials. API keys are resolved only by the server process and are never returned to the browser or written into the snapshot.
 
-- `DEEPSEEK_API_KEY`：读取 DeepSeek 账户余额。
-- `ZAI_CODING_CN_API_KEY` 或 `ZAI_API_KEY`：读取 Z.ai Coding Plan 额度。
+| Credential | Purpose |
+| --- | --- |
+| `DEEPSEEK_API_KEY` | Reads the DeepSeek account balance. |
+| `ZAI_CODING_CN_API_KEY` | Reads quota windows for a China-region Z.ai Coding Plan. |
+| `ZAI_API_KEY` | Fallback credential for a Z.ai Coding Plan. |
+| `ZAI_API_REGION` | Optional Z.ai region override. |
 
-API 估价只用于衡量等量 API 调用成本，不代表订阅实际扣费。
+## Data and refresh behavior
+
+Usage is derived locally from DSH session events. Repeated cumulative usage samples for the same turn and step replace earlier samples instead of being double-counted.
+
+- The last successful result is saved to `<DSH_HOME>/storages/usage-center-snapshot.json`.
+- Opening the page or restarting DSH immediately displays the current-day snapshot.
+- Snapshots older than one minute remain visible while a refresh runs in the background.
+- Manual refresh keeps existing data on screen.
+- If an upstream balance or quota request fails, the last successful snapshot remains available.
+- The snapshot contains aggregated usage and displayed balance/quota results, but no API keys.
+
+## Privacy and security
+
+- The overview endpoint accepts read-only `GET` requests from loopback clients only.
+- Session contents and raw event logs are not exposed to the browser.
+- Credentials stay behind the DSH credentials service.
+- No external analytics or telemetry are included.
+
+## Development
+
+```sh
+npm install
+npm run check
+npm run build
+```
+
+`npm run check` performs syntax checks and runs the Node test suite. The generated DSH client and server bundle is written to `lib/`, which is intentionally excluded from Git.
+
+## License
+
+[MIT](LICENSE)

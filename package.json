@@ -15,7 +15,7 @@
     "./client": "./lib/client.js",
     "./package.json": "./package.json"
   },
-  "files": ["lib", "cordis.patch.yml", "README.md", "LICENSE"],
+  "files": ["lib", "cordis.patch.yml", "README.md", "README.zh-CN.md", "docs/images", "LICENSE"],
   "scripts": {
     "build": "node scripts/build.mjs",
     "check": "node --check src/index.js && node --check src/usage.js && node --check src/pricing.js && node --check src/accounts.js && node --check src/snapshot.js && node --test",
