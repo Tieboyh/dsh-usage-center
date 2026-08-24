@@ -1,6 +1,6 @@
 {
   "name": "dsh-usage-center",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Native DSH settings page for daily provider usage, subscription quotas, and API price estimates.",
   "repository": {
     "type": "git",
@@ -27,6 +27,7 @@
     "client": {
       "platform": "web",
       "inject": [
+        "@deepseek-ai/dsh-client-locale",
         "@deepseek-ai/dsh-client-ui-slots",
         "@deepseek-ai/dsh-client-ui-settings"
       ]

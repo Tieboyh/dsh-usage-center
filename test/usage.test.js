@@ -4,6 +4,7 @@ import { foldToday } from '../src/usage.js';
 import { estimate } from '../src/pricing.js';
 import { parseDeepSeekBalance, parseZaiQuota } from '../src/accounts.js';
 import { isSnapshotForDay, SNAPSHOT_VERSION, snapshotWire } from '../src/snapshot.js';
+import { en, interpolate, zh } from '../src/locales.js';
 
 test('replaces cumulative usage samples for the same turn and step', () => {
   const day = '2026-08-24';
@@ -46,4 +47,15 @@ test('decorates cached data without mutating the snapshot', () => {
   const wire = snapshotWire(snapshot, 350, true);
   assert.deepEqual(wire.cache, { ageMs:250, refreshing:true });
   assert.equal('cache' in snapshot, false);
+});
+
+test('keeps Chinese and English dictionaries in sync', () => {
+  assert.deepEqual(Object.keys(en).sort(), Object.keys(zh).sort());
+  assert.equal(en.settingsNav, 'Usage & Cost');
+  assert.equal(zh.settingsNav, '用量与费用');
+});
+
+test('interpolates localized values', () => {
+  assert.equal(interpolate(en.usedPercent, { n: 38 }), '38% used');
+  assert.equal(interpolate(zh.updateFailedCached, { error: 'timeout' }), '更新失败，正在显示上次数据：timeout');
 });

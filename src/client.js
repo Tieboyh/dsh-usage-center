@@ -1,9 +1,11 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { en, interpolate, zh } from './locales.js';
 
 const h = React.createElement;
 const STYLE_ID = 'dsh-usage-center/style';
 const MARKER = 'data-dsh-usage-center-nav';
-export const inject = ['slots'];
+export const inject = ['slots', 'locale'];
+const LOCALE_NS = 'usage-center';
 
 const CSS = `
 .duc-root{color:var(--dsw-alias-label-primary,#171717);max-width:100%;padding:2px 0 32px}
@@ -23,64 +25,70 @@ const CSS = `
 @media(max-width:760px){.duc-summary,.duc-tokens,.duc-balance{grid-template-columns:1fr}.duc-summary{gap:0}.duc-summary>div,.duc-summary>div+div{padding:12px 0;border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-provider-head{flex-direction:column}.duc-cost{text-align:left}}
 `;
 
-function fmtNumber(value) { return new Intl.NumberFormat('zh-CN').format(value ?? 0); }
+function tr(t, key, vars) { return interpolate(t(key), vars); }
+function fmtNumber(value, locale) { return new Intl.NumberFormat(locale).format(value ?? 0); }
 function fmtUsd(value) { return `$${Number(value ?? 0).toFixed(value < .1 ? 4 : 3)}`; }
-function fmtMoney(value, currency) { return new Intl.NumberFormat('zh-CN', { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value); }
-function fmtReset(value) {
+function fmtMoney(value, currency, locale) { return new Intl.NumberFormat(locale, { style: 'currency', currency, minimumFractionDigits: 2, maximumFractionDigits: 4 }).format(value); }
+function fmtReset(value, locale, t) {
   if (!value) return '';
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? '' : `${date.toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'})} ${date.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'})} 重置`;
+  return Number.isNaN(date.getTime()) ? '' : `${date.toLocaleDateString(locale,{month:'numeric',day:'numeric'})} ${date.toLocaleTimeString(locale,{hour:'2-digit',minute:'2-digit'})} ${t('resets')}`;
 }
-function fmtUpdated(value) {
+function fmtUpdated(value, t) {
   if (!value) return '';
   const seconds = Math.max(0, Math.round((Date.now() - value) / 1000));
-  if (seconds < 10) return '刚刚更新';
-  if (seconds < 60) return `${seconds} 秒前更新`;
-  return `${Math.floor(seconds / 60)} 分钟前更新`;
+  if (seconds < 10) return t('justUpdated');
+  if (seconds < 60) return tr(t, 'secondsAgo', { n: seconds });
+  return tr(t, 'minutesAgo', { n: Math.floor(seconds / 60) });
 }
-const quotaNames = { session: '当前会话周期', weekly: '每周额度', billing: '账期额度' };
+const quotaKeys = { session: 'quotaSession', weekly: 'quotaWeekly', billing: 'quotaBilling' };
 
-function Quotas({ account }) {
-  if (!account || account.status !== 'ok') return h('p', { className: 'duc-plan' }, account?.status === 'not-configured' ? '未配置 ZAI_API_KEY，暂时无法读取订阅额度。' : '订阅额度暂时不可用。');
+function Quotas({ account, locale, t }) {
+  if (!account || account.status !== 'ok') return h('p', { className: 'duc-plan' }, account?.status === 'not-configured' ? t('zaiMissingKey') : t('quotaUnavailable'));
   return h(React.Fragment, null,
     h('p', { className: 'duc-plan' }, account.plan),
     ...account.windows.map(row => h('div', { className: 'duc-quota', key: row.kind },
       h('div', { className: 'duc-quota-meta' },
-        h('span', null, quotaNames[row.kind] ?? row.kind),
-        h('span', { className: 'duc-reset' }, fmtReset(row.resetsAt)),
-        h('b', null, `已用 ${row.usedPercent}%`)),
+        h('span', null, t(quotaKeys[row.kind] ?? row.kind)),
+        h('span', { className: 'duc-reset' }, fmtReset(row.resetsAt, locale, t)),
+        h('b', null, tr(t, 'usedPercent', { n: row.usedPercent }))),
       h('div', { className: 'duc-track' }, h('div', { className: 'duc-fill', style: { width: `${row.usedPercent}%` } })),
     )),
   );
 }
 
-function Balances({ account }) {
-  if (!account || account.status !== 'ok') return h('p', { className: 'duc-plan' }, account?.status === 'not-configured' ? '未配置 DEEPSEEK_API_KEY，暂时无法读取账户余额。' : '账户余额暂时不可用。');
-  if (account.balances.length === 0) return h('p', { className: 'duc-plan' }, '账户未返回可展示的余额。');
+function Balances({ account, locale, t }) {
+  if (!account || account.status !== 'ok') return h('p', { className: 'duc-plan' }, account?.status === 'not-configured' ? t('deepseekMissingKey') : t('balanceUnavailable'));
+  if (account.balances.length === 0) return h('p', { className: 'duc-plan' }, t('balanceEmpty'));
   return h('div', { className: 'duc-balances' }, ...account.balances.map(row => h('div', { className: 'duc-balance', key: row.currency },
-    h('div', { className: 'duc-balance-main' }, h('span', null, '账户可用总额'), h('b', null, fmtMoney(row.total, row.currency)), !account.available ? h('span', { className: 'duc-balance-state' }, '当前不可调用') : null),
-    h('div', { className: 'duc-balance-part' }, h('span', null, '充值余额'), h('b', null, fmtMoney(row.toppedUp, row.currency))),
-    h('div', { className: 'duc-balance-part' }, h('span', null, '赠送余额'), h('b', null, fmtMoney(row.granted, row.currency))),
+    h('div', { className: 'duc-balance-main' }, h('span', null, t('accountTotal')), h('b', null, fmtMoney(row.total, row.currency, locale)), !account.available ? h('span', { className: 'duc-balance-state' }, t('accountUnavailable')) : null),
+    h('div', { className: 'duc-balance-part' }, h('span', null, t('toppedUpBalance')), h('b', null, fmtMoney(row.toppedUp, row.currency, locale))),
+    h('div', { className: 'duc-balance-part' }, h('span', null, t('grantedBalance')), h('b', null, fmtMoney(row.granted, row.currency, locale))),
   )));
 }
 
-function Provider({ item, account }) {
-  const t = item.tokens;
+function Provider({ item, account, locale, t }) {
+  const tokens = item.tokens;
   return h('section', { className: 'duc-provider' },
     h('div', { className: 'duc-provider-head' },
       h('div', null, h('div', { className: 'duc-provider-name' }, item.providerId === 'deepseek-official' ? 'DeepSeek' : item.providerId === 'zai-coding-cn' ? 'Z.ai' : item.providerId), h('div', { className: 'duc-provider-model' }, item.model)),
-      h('div', { className: 'duc-cost' }, h('strong', null, item.estimate ? fmtUsd(item.estimate.usd) : '—'), h('span', null, '今日 API 估价')),
+      h('div', { className: 'duc-cost' }, h('strong', null, item.estimate ? fmtUsd(item.estimate.usd) : '—'), h('span', null, t('todayEstimate'))),
     ),
-    item.mode === 'subscription' ? h(Quotas, { account }) : h(Balances, { account }),
+    item.mode === 'subscription' ? h(Quotas, { account, locale, t }) : h(Balances, { account, locale, t }),
     h('div', { className: 'duc-tokens' },
-      h('div', { className: 'duc-token' }, h('b', null, fmtNumber(t.inputTokens + t.cacheWriteTokens)), '输入 Token'),
-      h('div', { className: 'duc-token' }, h('b', null, fmtNumber(t.cacheReadTokens)), '缓存读取 Token'),
-      h('div', { className: 'duc-token' }, h('b', null, fmtNumber(t.outputTokens)), '输出 Token')),
-    item.estimate ? h('p', { className: 'duc-note' }, 'API 估价按公开单价计算，仅用于衡量等量 API 调用成本，不是实际账单。单价生效日 ', item.estimate.price.effective, ' · ', h('a', { href: item.estimate.price.source, target: '_blank', rel: 'noreferrer' }, '查看价格来源')) : h('p', { className: 'duc-note' }, '当前模型尚未配置公开 API 单价，暂不估价。'),
+      h('div', { className: 'duc-token' }, h('b', null, fmtNumber(tokens.inputTokens + tokens.cacheWriteTokens, locale)), t('inputTokens')),
+      h('div', { className: 'duc-token' }, h('b', null, fmtNumber(tokens.cacheReadTokens, locale)), t('cacheReadTokens')),
+      h('div', { className: 'duc-token' }, h('b', null, fmtNumber(tokens.outputTokens, locale)), t('outputTokens'))),
+    item.estimate ? h('p', { className: 'duc-note' }, tr(t, 'estimatePrefix', { date: item.estimate.price.effective }), h('a', { href: item.estimate.price.source, target: '_blank', rel: 'noreferrer' }, t('priceSource'))) : h('p', { className: 'duc-note' }, t('priceMissing')),
   );
 }
 
-function UsageCenter() {
+function UsageCenter({ locale: localeService, t }) {
+  const localeRevision = useSyncExternalStore(
+    useMemo(() => callback => localeService.subscribe(callback), [localeService]),
+    useCallback(() => localeService.getSnapshot().active, [localeService]),
+  );
+  const intlLocale = String(localeRevision).toLowerCase().startsWith('zh') ? 'zh-CN' : 'en-US';
   const [state, setState] = useState({ loading: true, refreshing: false, data: null, error: '' });
   const load = useCallback(async (force = false) => {
     setState(s => ({ ...s, loading: s.data === null, refreshing: s.data !== null, error: '' }));
@@ -102,21 +110,21 @@ function UsageCenter() {
   const cost = providers.reduce((sum, p) => sum + (p.estimate?.usd ?? 0), 0);
   return h('main', { className: 'duc-root' },
     h('header', { className: 'duc-head' }, h('div', null,
-      h('h2', { className: 'duc-title' }, '用量与费用'),
-      h('p', { className: 'duc-desc' }, '查看今日各 Provider 的 Token、订阅额度和 API 估价。'),
-      state.data ? h('p', { className: 'duc-status', 'data-refreshing': state.refreshing }, state.refreshing ? '正在后台更新，当前展示上次数据' : fmtUpdated(state.data.updatedAt)) : null),
-    h('button', { className: 'duc-refresh', type: 'button', disabled: state.loading || state.refreshing, onClick: () => load(true) }, state.loading ? '加载中…' : state.refreshing ? '更新中…' : '刷新')),
+      h('h2', { className: 'duc-title' }, t('title')),
+      h('p', { className: 'duc-desc' }, t('description')),
+      state.data ? h('p', { className: 'duc-status', 'data-refreshing': state.refreshing }, state.refreshing ? t('updatingStatus') : fmtUpdated(state.data.updatedAt, t)) : null),
+    h('button', { className: 'duc-refresh', type: 'button', disabled: state.loading || state.refreshing, onClick: () => load(true) }, state.loading ? t('loading') : state.refreshing ? t('updating') : t('refresh'))),
     state.loading && !state.data ? h('div', null, h('div', { className: 'duc-skeleton duc-skeleton-summary' }), h('div', { className: 'duc-skeleton duc-skeleton-line' }), h('div', { className: 'duc-skeleton duc-skeleton-line' }), h('div', { className: 'duc-skeleton duc-skeleton-line' })) : null,
-    state.data ? h('div', { className: 'duc-summary' }, h('div', null, h('div', { className: 'duc-k' }, '统计日期'), h('div', { className: 'duc-v' }, state.data.day)), h('div', null, h('div', { className: 'duc-k' }, '今日 Token'), h('div', { className: 'duc-v' }, fmtNumber(total))), h('div', null, h('div', { className: 'duc-k' }, '合计 API 估价'), h('div', { className: 'duc-v' }, fmtUsd(cost)))) : null,
-    state.error ? h('p', { className: state.data ? 'duc-inline-error' : 'duc-error', role: 'alert' }, state.data ? `更新失败，正在显示上次数据：${state.error}` : `加载失败：${state.error}`) : null,
-    !state.loading && !state.error && providers.length === 0 ? h('p', { className: 'duc-empty' }, '今天还没有可统计的模型调用。') : null,
-    ...providers.map(item => h(Provider, { key: item.route, item, account: item.mode === 'subscription' ? state.data?.accounts?.zai : state.data?.accounts?.deepseek })),
+    state.data ? h('div', { className: 'duc-summary' }, h('div', null, h('div', { className: 'duc-k' }, t('statDate')), h('div', { className: 'duc-v' }, state.data.day)), h('div', null, h('div', { className: 'duc-k' }, t('todayTokens')), h('div', { className: 'duc-v' }, fmtNumber(total, intlLocale))), h('div', null, h('div', { className: 'duc-k' }, t('totalEstimate')), h('div', { className: 'duc-v' }, fmtUsd(cost)))) : null,
+    state.error ? h('p', { className: state.data ? 'duc-inline-error' : 'duc-error', role: 'alert' }, state.data ? tr(t, 'updateFailedCached', { error: state.error }) : tr(t, 'loadFailed', { error: state.error })) : null,
+    !state.loading && !state.error && providers.length === 0 ? h('p', { className: 'duc-empty' }, t('emptyToday')) : null,
+    ...providers.map(item => h(Provider, { key: item.route, item, locale: intlLocale, t, account: item.mode === 'subscription' ? state.data?.accounts?.zai : state.data?.accounts?.deepseek })),
   );
 }
 
 function markNav(label) {
   const sync = () => document.querySelectorAll('[role="dialog"] nav button').forEach(button => {
-    if (button.textContent?.trim() === label) button.setAttribute(MARKER, ''); else button.removeAttribute(MARKER);
+    if (button.textContent?.trim() === label()) button.setAttribute(MARKER, ''); else button.removeAttribute(MARKER);
   });
   sync();
   const observer = new MutationObserver(sync);
@@ -128,6 +136,11 @@ export function apply(ctx) {
   const style = document.createElement('style');
   style.id = STYLE_ID; style.textContent = CSS; document.head.appendChild(style);
   ctx.effect(() => () => style.remove(), 'usage-center: styles');
-  ctx.effect(() => markNav('用量与费用'), 'usage-center: settings icon');
-  ctx.slots.inject('settings.section', () => ctx.slots.register({ name: 'settings.section', id: 'usage-center', order: 110, label: () => '用量与费用' }, UsageCenter));
+  ctx.effect(() => ctx.locale.register(LOCALE_NS, { zh, en }), 'usage-center: dictionaries');
+  const t = ctx.locale.bind(LOCALE_NS);
+  ctx.effect(() => markNav(() => t('settingsNav')), 'usage-center: settings icon');
+  ctx.slots.inject('settings.section', () => ctx.slots.register({
+    name: 'settings.section', id: 'usage-center', order: 110, label: () => t('settingsNav'),
+    inject: () => ({ locale: ctx.locale, t }),
+  }, UsageCenter));
 }
