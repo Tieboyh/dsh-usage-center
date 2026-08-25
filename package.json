@@ -32,6 +32,47 @@
       ]
     }
   },
+  "dshWorkshop": {
+    "schema": "omdsh-workshop-package/v1",
+    "type": "plugin",
+    "integration": {
+      "protocol": "harness-cordis",
+      "artifact": "cordis.patch.yml"
+    },
+    "install": {
+      "mode": "guided",
+      "adapter": "third-party",
+      "failurePolicy": "manual",
+      "touchesCurrentBeforeActivation": true
+    },
+    "lifecycle": {
+      "activation": "restart-host",
+      "dispose": "unknown"
+    },
+    "permissions": [
+      "credentials:read",
+      "environment:read",
+      "filesystem:read",
+      "filesystem:write",
+      "locale:register",
+      "network:outbound",
+      "sessions:read",
+      "settings:register",
+      "webserver:register"
+    ],
+    "capability": {
+      "id": "usage-center.ui",
+      "kind": "ui",
+      "invocation": "Open DSH Settings, select Usage & Cost, and refresh the overview.",
+      "expected": "The page displays locally aggregated daily token usage and available provider balance or quota states, with API-equivalent estimates, without exposing credentials."
+    },
+    "evidence": {
+      "install": "README.md",
+      "failureIsolation": null,
+      "hotReload": "README.md",
+      "remove": null
+    }
+  },
   "keywords": ["dsh", "usage", "cost", "subscription"],
   "license": "MIT",
   "engines": { "node": ">=22.19.0" },
