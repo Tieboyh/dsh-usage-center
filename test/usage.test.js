@@ -21,6 +21,14 @@ test('calculates estimates from distinct cache and output rates', () => {
   assert.equal(Number(value.usd.toFixed(6)), 0.231242);
 });
 
+test('prices DeepSeek vision-exp at the public V4 Flash rate', () => {
+  const tokens = { inputTokens: 2_000, cacheReadTokens: 3_000, cacheWriteTokens: 0, outputTokens: 1_000 };
+  assert.deepEqual(
+    estimate('deepseek-official/deepseek-v4-flash-vision-exp', tokens),
+    estimate('deepseek-official/deepseek-v4-flash', tokens),
+  );
+});
+
 test('calculates a Kimi K3 API-equivalent estimate', () => {
   const value = estimate('kimi-coding/k3', { inputTokens: 2_000, cacheReadTokens: 3_000, cacheWriteTokens: 0, outputTokens: 1_000 });
   assert.equal(Number(value.usd.toFixed(6)), 0.0219);
