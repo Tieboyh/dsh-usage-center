@@ -16,7 +16,7 @@ const CSS = `
 .duc-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--dsw-alias-border-l1,#e4e5e7);border-block:1px solid var(--dsw-alias-border-l1,#e4e5e7);margin-bottom:28px}
 .duc-summary>div{background:var(--dsw-alias-bg-base,#fff);padding:18px 18px 18px 0}.duc-summary>div+div{padding-left:22px}.duc-k{color:var(--dsw-alias-label-secondary,#777b84);font-size:13px;line-height:20px}.duc-v{font-size:24px;line-height:34px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px}
 .duc-activity{padding:0 0 28px;margin:0 0 28px;border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-activity-title{font-size:18px;line-height:28px;font-weight:600;margin:0 0 16px}.duc-activity-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--dsw-alias-border-l1,#e4e5e7);border-radius:16px;margin-bottom:24px;overflow:hidden}.duc-activity-metric{padding:15px 14px;text-align:center}.duc-activity-metric+.duc-activity-metric{border-left:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-activity-metric b{display:block;font-size:19px;line-height:28px;font-weight:600;font-variant-numeric:tabular-nums}.duc-activity-metric span{display:block;color:var(--dsw-alias-label-secondary,#777b84);font-size:11px;line-height:17px}.duc-heatmap-scroll{overflow-x:auto;padding:0 0 5px}.duc-months{position:relative;height:20px;color:var(--dsw-alias-label-tertiary,#999da5);font-size:10px;line-height:16px}.duc-month{position:absolute;top:0;white-space:nowrap}.duc-heatmap{display:grid;grid-template-rows:repeat(7,8px);grid-auto-flow:column;grid-auto-columns:8px;gap:2px;width:max-content}.duc-day{width:8px;height:8px;border-radius:2px;background:var(--dsw-alias-fill-l2,#eceef1)}.duc-day[data-level="1"]{background:color-mix(in srgb,var(--dsw-alias-brand-primary,#246bfd) 22%,transparent)}.duc-day[data-level="2"]{background:color-mix(in srgb,var(--dsw-alias-brand-primary,#246bfd) 42%,transparent)}.duc-day[data-level="3"]{background:color-mix(in srgb,var(--dsw-alias-brand-primary,#246bfd) 68%,transparent)}.duc-day[data-level="4"]{background:var(--dsw-alias-brand-primary,#246bfd)}.duc-day[data-blank=true]{visibility:hidden}
-.duc-provider{border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7);padding:0 0 26px;margin-bottom:26px}.duc-provider-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:20px}.duc-provider-name{font-size:18px;line-height:28px;font-weight:600}.duc-provider-model{color:var(--dsw-alias-label-secondary,#777b84);font:12px/20px ui-monospace,SFMono-Regular,monospace}.duc-cost{text-align:right}.duc-cost strong{display:block;font-size:22px;line-height:30px;font-variant-numeric:tabular-nums}.duc-cost span{color:var(--dsw-alias-label-secondary,#777b84);font-size:12px}
+.duc-provider{border-bottom:1px solid var(--dsw-alias-border-l1,#e4e5e7);padding:0 0 26px;margin-bottom:26px}.duc-provider-head,.duc-model-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px}.duc-provider-head{margin-bottom:20px}.duc-provider-name{font-size:18px;line-height:28px;font-weight:600}.duc-provider-model{color:var(--dsw-alias-label-secondary,#777b84);font:12px/20px ui-monospace,SFMono-Regular,monospace}.duc-cost{text-align:right}.duc-cost strong{display:block;font-size:22px;line-height:30px;font-variant-numeric:tabular-nums}.duc-cost span{color:var(--dsw-alias-label-secondary,#777b84);font-size:12px}.duc-model{padding-top:18px}.duc-model+.duc-model{border-top:1px solid var(--dsw-alias-border-l1,#e4e5e7);margin-top:18px}.duc-model-head{margin-bottom:12px}.duc-model-cost{font-size:14px;font-weight:500;font-variant-numeric:tabular-nums}
 .duc-tokens{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}.duc-token{font-size:13px;color:var(--dsw-alias-label-secondary,#777b84)}.duc-token b{display:block;color:var(--dsw-alias-label-primary,#171717);font-size:16px;line-height:24px;font-weight:500;font-variant-numeric:tabular-nums}
 .duc-balances{display:flex;flex-direction:column;margin:-5px 0 21px;border-block:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-balance{display:grid;grid-template-columns:minmax(150px,1.2fr) repeat(2,minmax(110px,1fr));gap:18px;padding:14px 0;align-items:end}.duc-balance+.duc-balance{border-top:1px solid var(--dsw-alias-border-l1,#e4e5e7)}.duc-balance-main span,.duc-balance-part span{display:block;color:var(--dsw-alias-label-secondary,#777b84);font-size:12px;line-height:18px}.duc-balance-main b{font-size:22px;line-height:30px;font-weight:600;font-variant-numeric:tabular-nums}.duc-balance-part b{font-size:15px;line-height:24px;font-weight:500;font-variant-numeric:tabular-nums}.duc-balance-state{color:var(--dsw-alias-state-error-primary,#c33);font-size:12px;margin-left:8px}
 .duc-plan{color:var(--dsw-alias-label-secondary,#777b84);font-size:13px;margin:-12px 0 18px}.duc-quota{margin-top:13px}.duc-quota-meta{display:flex;align-items:baseline;gap:12px;font-size:13px;margin-bottom:7px}.duc-quota-meta b{margin-left:auto;font-size:14px;font-variant-numeric:tabular-nums}.duc-reset{color:var(--dsw-alias-label-tertiary,#999da5);font-size:11px}.duc-track{height:7px;border-radius:99px;background:var(--dsw-alias-fill-l2,#eceef1);overflow:hidden}.duc-fill{height:100%;border-radius:inherit;background:var(--dsw-alias-button-primary-fill,#1668dc)}
@@ -44,6 +44,15 @@ function fmtUpdated(value, t) {
   return tr(t, 'minutesAgo', { n: Math.floor(seconds / 60) });
 }
 const quotaKeys = { session: 'quotaSession', fiveHour: 'quotaFiveHour', weekly: 'quotaWeekly', billing: 'quotaBilling' };
+
+export function groupProviders(providers) {
+  const groups = new Map();
+  for (const item of providers) {
+    if (!groups.has(item.providerId)) groups.set(item.providerId, { providerId: item.providerId, mode: item.mode, items: [] });
+    groups.get(item.providerId).items.push(item);
+  }
+  return [...groups.values()];
+}
 
 function Heatmap({ activity, locale, t }) {
   if (!activity?.days?.length) return null;
@@ -109,20 +118,28 @@ function Balances({ account, locale, t }) {
   )));
 }
 
-function Provider({ item, account, locale, t }) {
+function ModelUsage({ item, locale, t }) {
   const tokens = item.tokens;
-  const providerName = item.providerId === 'deepseek-official' ? 'DeepSeek' : item.providerId === 'zai-coding-cn' ? 'Z.ai' : item.providerId === 'kimi-coding' ? 'Kimi Code' : item.providerId;
-  return h('section', { className: 'duc-provider' },
-    h('div', { className: 'duc-provider-head' },
-      h('div', null, h('div', { className: 'duc-provider-name' }, providerName), h('div', { className: 'duc-provider-model' }, item.model)),
-      h('div', { className: 'duc-cost' }, h('strong', null, item.estimate ? fmtUsd(item.estimate.usd) : '—'), h('span', null, t('todayEstimate'))),
-    ),
-    item.mode === 'subscription' ? h(Quotas, { account, missingKey: item.providerId === 'kimi-coding' ? 'kimiMissingKey' : 'zaiMissingKey', locale, t }) : h(Balances, { account, locale, t }),
+  return h('div', { className: 'duc-model' },
+    h('div', { className: 'duc-model-head' }, h('div', { className: 'duc-provider-model' }, item.model), h('div', { className: 'duc-model-cost' }, item.estimate ? fmtUsd(item.estimate.usd) : '—')),
     h('div', { className: 'duc-tokens' },
       h('div', { className: 'duc-token' }, h('b', null, fmtNumber(tokens.inputTokens + tokens.cacheWriteTokens, locale)), t('inputTokens')),
       h('div', { className: 'duc-token' }, h('b', null, fmtNumber(tokens.cacheReadTokens, locale)), t('cacheReadTokens')),
       h('div', { className: 'duc-token' }, h('b', null, fmtNumber(tokens.outputTokens, locale)), t('outputTokens'))),
     item.estimate ? h('p', { className: 'duc-note' }, tr(t, 'estimatePrefix', { date: item.estimate.price.effective }), h('a', { href: item.estimate.price.source, target: '_blank', rel: 'noreferrer' }, t('priceSource'))) : h('p', { className: 'duc-note' }, t('priceMissing')),
+  );
+}
+
+function Provider({ group, account, locale, t }) {
+  const providerName = group.providerId === 'deepseek-official' ? 'DeepSeek' : group.providerId === 'zai-coding-cn' ? 'Z.ai' : group.providerId === 'kimi-coding' ? 'Kimi Code' : group.providerId;
+  const cost = group.items.reduce((sum, item) => sum + (item.estimate?.usd ?? 0), 0);
+  return h('section', { className: 'duc-provider' },
+    h('div', { className: 'duc-provider-head' },
+      h('div', { className: 'duc-provider-name' }, providerName),
+      h('div', { className: 'duc-cost' }, h('strong', null, group.items.some(item => item.estimate) ? fmtUsd(cost) : '—'), h('span', null, t('todayEstimate'))),
+    ),
+    group.mode === 'subscription' ? h(Quotas, { account, missingKey: group.providerId === 'kimi-coding' ? 'kimiMissingKey' : 'zaiMissingKey', locale, t }) : h(Balances, { account, locale, t }),
+    ...group.items.map(item => h(ModelUsage, { key: item.route, item, locale, t })),
   );
 }
 
@@ -149,6 +166,7 @@ function UsageCenter({ locale: localeService, t }) {
     return () => clearInterval(timer);
   }, [state.data?.cache?.refreshing, load]);
   const providers = state.data?.providers ?? [];
+  const providerGroups = groupProviders(providers);
   const total = providers.reduce((sum, p) => sum + (p.tokens.inputTokens + p.tokens.cacheWriteTokens + p.tokens.cacheReadTokens + p.tokens.outputTokens), 0);
   const cost = providers.reduce((sum, p) => sum + (p.estimate?.usd ?? 0), 0);
   return h('main', { className: 'duc-root' },
@@ -162,7 +180,7 @@ function UsageCenter({ locale: localeService, t }) {
     state.error ? h('p', { className: state.data ? 'duc-inline-error' : 'duc-error', role: 'alert' }, state.data ? tr(t, 'updateFailedCached', { error: state.error }) : tr(t, 'loadFailed', { error: state.error })) : null,
     state.data?.activity ? h(Heatmap, { activity: state.data.activity, locale: intlLocale, t }) : null,
     !state.loading && !state.error && providers.length === 0 ? h('p', { className: 'duc-empty' }, t('emptyToday')) : null,
-    ...providers.map(item => h(Provider, { key: item.route, item, locale: intlLocale, t, account: item.providerId === 'kimi-coding' ? state.data?.accounts?.kimi : item.mode === 'subscription' ? state.data?.accounts?.zai : state.data?.accounts?.deepseek })),
+    ...providerGroups.map(group => h(Provider, { key: group.providerId, group, locale: intlLocale, t, account: group.providerId === 'kimi-coding' ? state.data?.accounts?.kimi : group.mode === 'subscription' ? state.data?.accounts?.zai : state.data?.accounts?.deepseek })),
   );
 }
 

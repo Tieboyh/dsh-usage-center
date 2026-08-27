@@ -5,6 +5,19 @@ import { estimate } from '../src/pricing.js';
 import { parseDeepSeekBalance, parseKimiQuota, parseZaiQuota } from '../src/accounts.js';
 import { isSnapshotForDay, SNAPSHOT_VERSION, snapshotWire } from '../src/snapshot.js';
 import { en, interpolate, zh } from '../src/locales.js';
+import { groupProviders } from '../src/client.js';
+
+test('groups models under their provider without merging model usage', () => {
+  const groups = groupProviders([
+    { providerId:'deepseek-official', mode:'metered', model:'deepseek-v4-flash', route:'deepseek-official/deepseek-v4-flash' },
+    { providerId:'deepseek-official', mode:'metered', model:'deepseek-v4-pro', route:'deepseek-official/deepseek-v4-pro' },
+    { providerId:'kimi-coding', mode:'subscription', model:'k3', route:'kimi-coding/k3' },
+  ]);
+  assert.deepEqual(groups.map(group => [group.providerId, group.items.map(item => item.model)]), [
+    ['deepseek-official', ['deepseek-v4-flash', 'deepseek-v4-pro']],
+    ['kimi-coding', ['k3']],
+  ]);
+});
 
 test('replaces cumulative usage samples for the same turn and step', () => {
   const day = '2026-08-24';
